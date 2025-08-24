@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ClassMint 教师端</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: #f8f9fa;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .navbar {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+      transition: all 0.3s ease;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+    }
+    .card-header {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-bottom: 1px solid #dee2e6;
+      border-radius: 15px 15px 0 0 !important;
+      font-weight: 600;
+    }
+    .btn {
+      border-radius: 10px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+    .btn:hover {
+      transform: translateY(-1px);
+    }
+    .form-control {
+      border-radius: 10px;
+      border: 2px solid #e9ecef;
+      transition: all 0.3s ease;
+    }
+    .form-control:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .qr-code {
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 8px;
+    }
+    .qr-code:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    }
+    .status-badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 20px;
+    }
+    .table {
+      border-radius: 10px;
+      overflow: hidden;
+    }
+    .table th {
+      background: #f8f9fa;
+      border: none;
+      font-weight: 600;
+      color: #495057;
+    }
+    .stats-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .stats-card .card-body {
+      padding: 1.5rem;
+    }
+    .stats-number {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+    .modal-content {
+      border-radius: 15px;
+      border: none;
+    }
+    .blockchain-item {
+      background: #f8f9fa;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-left: 4px solid #667eea;
+    }
+    .block-hash {
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      background: #e9ecef;
+      padding: 0.25rem 0.5rem;
+      border-radius: 5px;
+      word-break: break-all;
+    }
+    .verification-result {
+      padding: 1rem;
+      border-radius: 10px;
+      margin-top: 1rem;
+    }
+    .verification-success {
+      background: #d4edda;
+      border: 1px solid #c3e6cb;
+      color: #155724;
+    }
+    .verification-danger {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+  </style>
+</head>
+<body>
+  <!-- 导航栏 -->
+  <nav class="navbar navbar-expand-lg navbar-dark mb-4">
+    <div class="container">
+      <a class="navbar-brand fw-bold" href="#">
+        <i class="fas fa-coins me-2"></i>ClassMint 教师端
+      </a>
+      <div class="navbar-nav ms-auto">
+        <span class="navbar-text me-3">
+          <i class="fas fa-user me-1"></i>{{ uname }}
+        </span>
+        <a class="btn btn-outline-light btn-sm" href="/logout">
+          <i class="fas fa-sign-out-alt me-1"></i>退出
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <!-- 统计卡片 -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="card stats-card">
+          <div class="card-body text-center">
+            <i class="fas fa-qrcode fa-2x mb-2"></i>
+            <div class="stats-number">{{ stats.total_tokens }}</div>
+            <div>总令牌数</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card">
+          <div class="card-body text-center">
+            <i class="fas fa-check-circle fa-2x mb-2"></i>
+            <div class="stats-number">{{ stats.total_claims }}</div>
+            <div>已领取</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card">
+          <div class="card-body text-center">
+            <i class="fas fa-coins fa-2x mb-2"></i>
+            <div class="stats-number">¥{{ "%.2f"|format(stats.active_amount / 100) }}</div>
+            <div>活跃金额</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="card stats-card">
+          <div class="card-body text-center">
+            <i class="fas fa-link fa-2x mb-2"></i>
+            <div class="stats-number">{{ stats.blockchain_length }}</div>
+            <div>区块链长度</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <!-- 生成奖励二维码 -->
+      <div class="col-lg-4">
+        <div class="card h-100">
+          <div class="card-header d-flex align-items-center">
+            <i class="fas fa-plus-circle me-2 text-primary"></i>
+            生成奖励二维码
+          </div>
+          <div class="card-body">
+            <form method="post" action="/token/new" id="tokenForm">
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  <i class="fas fa-coins me-1"></i>金额（元）
+                </label>
+                <input name="amount" type="number" class="form-control" value="5" min="0.01" step="0.01" required>
+                <small class="text-muted">系统会自动转换为分</small>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  <i class="fas fa-clock me-1"></i>有效期（分钟）
+                </label>
+                <input name="expire_minutes" type="number" class="form-control" value="120" min="1" required>
+              </div>
+              
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="one_time" name="one_time" checked>
+                <label class="form-check-label" for="one_time">
+                  <i class="fas fa-shield-alt me-1"></i>单次使用
+                </label>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label fw-semibold">
+                  <i class="fas fa-comment me-1"></i>说明（可选）
+                </label>
+                <input name="description" type="text" class="form-control" placeholder="例如：课堂表现奖励、作业完成奖励等">
+              </div>
+              
+              <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-qrcode me-2"></i>生成二维码
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- 令牌列表 -->
+      <div class="col-lg-8">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-list me-2 text-primary"></i>令牌列表</span>
+            <small class="text-muted">最新 {{ tokens|length }} 条</small>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>金额</th>
+                    <th>状态</th>
+                    <th>有效期</th>
+                    <th>二维码</th>
+                    <th>操作</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {% for t in tokens %}
+                  <tr>
+                    <td><span class="badge bg-secondary">{{ t.id }}</span></td>
+                    <td>
+                      <span class="fw-bold text-success">¥{{ "%.2f"|format(t.amount/100) }}</span>
+                    </td>
+                    <td>
+                      {% if t.status == 'ACTIVE' %}
+                        <span class="status-badge bg-success">活跃</span>
+                      {% elif t.status == 'USED' %}
+                        <span class="status-badge bg-info">已使用</span>
+                      {% elif t.status == 'VOID' %}
+                        <span class="status-badge bg-warning">已作废</span>
+                      {% else %}
+                        <span class="status-badge bg-secondary">{{ t.status }}</span>
+                      {% endif %}
+                    </td>
+                    <td>
+                      <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        {{ t.expires_at|int|datetime }}
+                      </small>
+                    </td>
+                    <td>
+                      <img src="/token/qr/{{ t.id }}" 
+                           class="qr-code" 
+                           style="height:48px; width:48px;"
+                           data-token-id="{{ t.id }}"
+                           onclick="showQRModal(this)"
+                           title="点击查看大图">
+                    </td>
+                    <td>
+                      {% if t.status == 'ACTIVE' %}
+                        <form method="post" action="/token/void/{{ t.id }}" class="d-inline">
+                          <button class="btn btn-warning btn-sm" type="submit" 
+                                  onclick="return confirm('确定要作废这个令牌吗？')">
+                            <i class="fas fa-ban me-1"></i>作废
+                          </button>
+                        </form>
+                      {% else %}
+                        <span class="text-muted">-</span>
+                      {% endif %}
+                    </td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 领取记录和区块链 -->
+    <div class="row mt-4">
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header">
+            <i class="fas fa-history me-2 text-primary"></i>最近领取记录
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover mb-0">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>领取人</th>
+                    <th>金额</th>
+                    <th>时间</th>
+                  </tr>
+                </thead>
+                <tbody>
+                {% for c in claims %}
+                  <tr>
+                    <td><span class="badge bg-secondary">{{ c.id }}</span></td>
+                    <td>
+                      <i class="fas fa-user me-1 text-primary"></i>
+                      {{ c.claimer }}
+                    </td>
+                    <td>
+                      <span class="fw-bold text-success">¥{{ "%.2f"|format(c.amount/100) }}</span>
+                    </td>
+                    <td>
+                      <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        {{ c.created_at|int|datetime }}
+                      </small>
+                    </td>
+                  </tr>
+                {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-lg-6">
+        <div class="card">
+          <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-link me-2 text-primary"></i>区块链验证</span>
+            <button class="btn btn-outline-primary btn-sm" onclick="verifyBlockchain()">
+              <i class="fas fa-check-circle me-1"></i>验证完整性
+            </button>
+          </div>
+          <div class="card-body">
+            <div id="verificationResult"></div>
+            <div class="text-center">
+              <a class="btn btn-outline-info btn-sm" href="/api/ledger/verify" target="_blank">
+                <i class="fas fa-external-link-alt me-1"></i>查看API结果
+              </a>
+              <a class="btn btn-outline-success btn-sm ms-2" href="/blockchain">
+                <i class="fas fa-eye me-1"></i>查看区块链
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 二维码放大模态框 -->
+  <div class="modal fade" id="qrModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-qrcode me-2"></i>奖励令牌二维码
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body text-center">
+          <div id="qrModalContent"></div>
+          <div class="mt-3">
+            <small class="text-muted">
+              <i class="fas fa-info-circle me-1"></i>
+              学生可以使用手机扫描此二维码领取奖励
+            </small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+          <button type="button" class="btn btn-primary" onclick="downloadQR()">
+            <i class="fas fa-download me-1"></i>下载
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let currentQRImage = null;
+    
+    // 显示二维码模态框
+    function showQRModal(imgElement) {
+      const tokenId = imgElement.getAttribute('data-token-id');
+      const qrSrc = imgElement.src;
+      
+      document.getElementById('qrModalContent').innerHTML = `
+        <img src="${qrSrc}" style="max-width: 100%; height: auto;" alt="QR Code">
+        <div class="mt-2">
+          <strong>令牌ID:</strong> ${tokenId}
+        </div>
+      `;
+      
+      currentQRImage = qrSrc;
+      new bootstrap.Modal(document.getElementById('qrModal')).show();
+    }
+    
+    // 下载二维码
+    function downloadQR() {
+      if (currentQRImage) {
+        const link = document.createElement('a');
+        link.href = currentQRImage;
+        link.download = `classmint-token-${Date.now()}.png`;
+        link.click();
+      }
+    }
+    
+    // 验证区块链完整性
+    async function verifyBlockchain() {
+      const resultDiv = document.getElementById('verificationResult');
+      resultDiv.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin"></i> 验证中...</div>';
+      
+      try {
+        const response = await fetch('/api/ledger/verify');
+        const data = await response.json();
+        
+        if (data.ok) {
+          resultDiv.innerHTML = `
+            <div class="verification-result verification-success">
+              <i class="fas fa-check-circle me-2"></i>
+              <strong>区块链验证成功！</strong><br>
+              链长度: ${data.length} 个区块<br>
+              所有区块哈希验证通过
+            </div>
+          `;
+          // 更新区块链长度显示
+          const blockchainLengthElement = document.getElementById('blockchainLength');
+          if (blockchainLengthElement) {
+            blockchainLengthElement.textContent = data.length;
+          }
+        } else {
+          resultDiv.innerHTML = `
+            <div class="verification-result verification-danger">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              <strong>区块链验证失败！</strong><br>
+              在区块 ${data.broken_at} 处发现哈希不匹配
+            </div>
+          `;
+        }
+      } catch (error) {
+        resultDiv.innerHTML = `
+          <div class="verification-result verification-danger">
+            <i class="fas fa-times-circle me-2"></i>
+            <strong>验证请求失败：</strong><br>
+            ${error.message}
+          </div>
+        `;
+      }
+    }
+    
+    // 页面加载时自动验证区块链
+    document.addEventListener('DOMContentLoaded', function() {
+      verifyBlockchain();
+      
+      // 表单提交优化
+      document.getElementById('tokenForm').addEventListener('submit', function(e) {
+        const btn = e.target.querySelector('button[type="submit"]');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>生成中...';
+        btn.disabled = true;
+      });
+    });
+  </script>
+</body>
+</html>
